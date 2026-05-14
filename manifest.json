@@ -1,0 +1,24 @@
+{
+  "name": "Crypto Trader Pro",
+  "short_name": "CryptoPro",
+  "description": "Analyse technique LIVE crypto - Signaux Long/Short",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0e1a",
+  "theme_color": "#00aaff",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/mdi/chart-line.svg?color=%2300aaff&width=192&height=192",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://api.iconify.design/mdi/chart-line.svg?color=%2300aaff&width=512&height=512",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
