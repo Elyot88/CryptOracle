@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>⚡ Crypto Trader Pro - LIVE</title>
-<!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00aaff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,7 +10,6 @@
 <meta name="apple-mobile-web-app-title" content="CryptoPro">
 <link rel="apple-touch-icon" href="https://api.iconify.design/mdi/chart-line.svg?color=%2300aaff&width=180&height=180">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,sans-serif}
@@ -99,10 +97,71 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
 .stat{background:#111827;border:1px solid #2a3a5c;border-radius:8px;padding:10px}
 .stat .l{font-size:.66rem;color:#8892a4;text-transform:uppercase}
 .stat .v{font-size:1rem;font-weight:700;margin-top:3px;font-family:monospace}
-.toast{position:fixed;bottom:20px;right:20px;background:#1a2235;border:1px solid #00ff88;border-radius:8px;padding:12px 18px;color:#00ff88;font-weight:700;display:none;z-index:200}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a2235;border:1px solid #00ff88;border-radius:8px;padding:12px 18px;color:#00ff88;font-weight:700;display:none;z-index:9998;white-space:nowrap}
 .toast.show{display:block}
 .toast.err{border-color:#ff3366;color:#ff3366}
 .warn{background:#ffd70010;border:1px solid #ffd70044;border-radius:10px;padding:14px;font-size:.82rem;color:#ccc;line-height:1.5;margin-top:14px}
+
+/* ============ FEAR & GREED ============ */
+.fg-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.fg-gauge{position:relative;width:160px;height:90px;flex-shrink:0}
+.fg-gauge canvas{position:absolute;top:0;left:0}
+.fg-val{position:absolute;bottom:0;left:50%;transform:translateX(-50%);text-align:center}
+.fg-val .n{font-size:2rem;font-weight:900}
+.fg-val .t{font-size:.7rem;color:#8892a4;margin-top:-4px}
+.fg-info{flex:1;min-width:200px}
+.fg-info p{font-size:.85rem;color:#aaa;line-height:1.6}
+.fg-hist{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fg-hitem{background:#111827;border:1px solid #2a3a5c;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:80px}
+.fg-hitem .hl{font-size:.65rem;color:#8892a4}
+.fg-hitem .hv{font-size:1.1rem;font-weight:800;margin-top:2px}
+.fg-bar{height:8px;border-radius:4px;background:#2a3a5c;margin-top:12px;overflow:hidden}
+.fg-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.notif-panel{background:#1a2235;border:1px solid #2a3a5c;border-radius:12px;padding:20px;margin-bottom:16px}
+.notif-panel h3{margin-bottom:14px}
+.notif-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2a3a5c15}
+.notif-row:last-child{border-bottom:none}
+.notif-label{font-size:.88rem}
+.notif-label small{display:block;color:#8892a4;font-size:.72rem;margin-top:2px}
+.toggle{position:relative;width:46px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#2a3a5c;border-radius:12px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:linear-gradient(135deg,#00aaff,#9945ff)}
+input:checked+.slider:before{transform:translateX(22px)}
+.notif-log{background:#111827;border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;margin-top:10px;font-size:.8rem}
+.nlog-item{padding:6px 0;border-bottom:1px solid #2a3a5c33;display:flex;gap:10px;align-items:flex-start}
+.nlog-item:last-child{border-bottom:none}
+.nlog-item .ntime{color:#8892a4;white-space:nowrap;font-size:.7rem;margin-top:2px}
+.nlog-item .nmsg{line-height:1.4}
+.nbadge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.65rem;font-weight:700;margin-right:4px}
+.nbadge.long{background:#00ff8822;color:#00ff88}
+.nbadge.short{background:#ff336622;color:#ff3366}
+.nbadge.rsi{background:#ffd70022;color:#ffd700}
+.nbadge.fg{background:#9945ff22;color:#9945ff}
+
+/* ============ CALCULATEUR ============ */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
+.calc-input{background:#111827;border:1px solid #2a3a5c;border-radius:8px;padding:14px}
+.calc-input label{font-size:.72rem;color:#8892a4;text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px}
+.calc-input input,.calc-input select{width:100%;background:#0a0e1a;border:1px solid #2a3a5c;border-radius:6px;padding:8px 10px;color:#fff;font-size:.95rem;font-family:monospace}
+.calc-input input:focus,.calc-input select:focus{outline:none;border-color:#00aaff}
+.calc-result{background:#111827;border:1px solid #2a3a5c;border-radius:12px;padding:16px}
+.calc-result h4{color:#00aaff;margin-bottom:12px;font-size:.9rem}
+.res-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #2a3a5c22;font-size:.88rem}
+.res-row:last-child{border-bottom:none;margin-top:4px;padding-top:10px}
+.res-row .rl{color:#8892a4}
+.res-row .rv{font-weight:700;font-family:monospace}
+.res-row.total .rv{font-size:1.1rem;color:#00ff88}
+.res-row.loss .rv{color:#ff3366}
+.rr-bar{height:10px;border-radius:5px;background:#2a3a5c;margin-top:8px;overflow:hidden;display:flex}
+.rr-loss{background:#ff3366;height:100%}
+.rr-gain{background:#00ff88;height:100%}
+.rr-label{display:flex;justify-content:space-between;font-size:.7rem;color:#8892a4;margin-top:4px}
+.auto-fill-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.auto-fill-btns button{padding:5px 10px;border-radius:6px;border:1px solid #2a3a5c;background:#1a2235;color:#8892a4;cursor:pointer;font-size:.75rem;font-weight:600}
+.auto-fill-btns button:hover{border-color:#00aaff;color:#00aaff}
 </style>
 </head>
 <body>
@@ -111,7 +170,8 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
   <div class="logo">⚡ CryptoTrader Pro <span style="font-size:.7rem;color:#00ff88">● LIVE</span></div>
   <div class="status">
     <span><span class="dot" id="dot"></span><span id="stat">CHARGEMENT</span></span>
-    <span style="color:#8892a4">📡 CoinGecko API</span>
+    <span style="color:#8892a4">📡 CoinGecko</span>
+    <span id="fgbadge" style="font-size:.8rem;padding:2px 8px;border-radius:10px;background:#9945ff22;color:#9945ff;border:1px solid #9945ff44;display:none"></span>
     <span id="time" style="font-family:monospace;color:#8892a4"></span>
   </div>
 </div>
@@ -121,11 +181,24 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
   <button class="tab" onclick="tab(event,'a')">🔍 Analyse</button>
   <button class="tab" onclick="tab(event,'n')">📰 Actualités</button>
   <button class="tab" onclick="tab(event,'b')">📈 Graphiques</button>
+  <button class="tab" onclick="tab(event,'t')">🔔 Alertes</button>
+  <button class="tab" onclick="tab(event,'c')">🎯 Calculateur</button>
 </div>
 
 <div class="main">
 
+<!-- DASHBOARD -->
 <div class="page active" id="p-d">
+  <!-- Fear & Greed mini dans dashboard -->
+  <div id="fg-dash" style="margin-bottom:16px;display:none">
+    <div class="panel" style="padding:14px 20px">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:.85rem;font-weight:700">😱 Fear & Greed Index</div>
+        <div id="fg-dash-content" style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"></div>
+        <button class="btn" style="padding:6px 12px;font-size:.75rem" onclick="tab({currentTarget:document.querySelectorAll('.tab')[4]},'t')">Voir alertes</button>
+      </div>
+    </div>
+  </div>
   <div class="summary" id="sum">
     <div class="sc"><div class="ic">⏳</div><div class="v">--</div><div class="l">Chargement</div></div>
     <div class="sc"><div class="ic">⏳</div><div class="v">--</div><div class="l">Chargement</div></div>
@@ -135,6 +208,7 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
   <div id="cards"><div class="loading"><div class="spin"></div><div>Connexion à CoinGecko API...</div></div></div>
 </div>
 
+<!-- ANALYSE -->
 <div class="page" id="p-a">
   <div class="panel">
     <h3>🎯 Synthèse Multi-Crypto (Live)</h3>
@@ -149,6 +223,7 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
   <div class="warn">⚠️ Trading à risque. Ces analyses sont éducatives, pas des conseils financiers. DYOR.</div>
 </div>
 
+<!-- ACTUALITÉS -->
 <div class="page" id="p-n">
   <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <h2 style="color:#00aaff">📰 Actualités & Sources Live</h2>
@@ -157,6 +232,7 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
   <div class="ngrid" id="news"><div class="loading"><div class="spin"></div></div></div>
 </div>
 
+<!-- GRAPHIQUES -->
 <div class="page" id="p-b">
   <div class="csel">
     <button class="csb active" onclick="bigSel(event,'wbtc')">WBTC</button>
@@ -168,17 +244,189 @@ body{background:#0a0e1a;color:#fff;min-height:100vh}
     <h3 id="btitle">📈 Chargement...</h3>
     <div class="bigbox"><canvas id="bigC"></canvas></div>
   </div>
-  <div class="panel">
-    <h3>📊 Stats 72h</h3>
-    <div class="stats" id="bstats"></div>
-  </div>
-  <div class="panel">
-    <h3>🎯 Analyse</h3>
-    <p id="bana" style="line-height:1.7;color:#aaa;font-size:.9rem">...</p>
-  </div>
+  <div class="panel"><h3>📊 Stats 72h</h3><div class="stats" id="bstats"></div></div>
+  <div class="panel"><h3>🎯 Analyse</h3><p id="bana" style="line-height:1.7;color:#aaa;font-size:.9rem">...</p></div>
 </div>
 
+<!-- ALERTES & NOTIFICATIONS -->
+<div class="page" id="p-t">
+  <div class="notif-panel">
+    <h3>🔔 Notifications Push</h3>
+    <div id="notif-status" style="background:#111827;border-radius:8px;padding:12px;margin-bottom:14px;font-size:.85rem;color:#8892a4">
+      Chargement du statut des notifications...
+    </div>
+    <button class="btn" id="notif-btn" onclick="requestNotifPerm()" style="margin-bottom:16px;display:none">
+      🔔 Activer les notifications
+    </button>
+
+    <div class="notif-row">
+      <div class="notif-label">
+        📈 Signal LONG/SHORT FORT
+        <small>Score > 30 ou < -30 sur n'importe quelle crypto</small>
+      </div>
+      <label class="toggle"><input type="checkbox" id="n-signal" checked onchange="saveNotifSettings()"><span class="slider"></span></label>
+    </div>
+    <div class="notif-row">
+      <div class="notif-label">
+        📊 RSI Extrême
+        <small>RSI > 70 (surachat) ou RSI < 30 (survente)</small>
+      </div>
+      <label class="toggle"><input type="checkbox" id="n-rsi" checked onchange="saveNotifSettings()"><span class="slider"></span></label>
+    </div>
+    <div class="notif-row">
+      <div class="notif-label">
+        💥 Variation rapide +5%/-5%
+        <small>Mouvement de prix > 5% sur 24h</small>
+      </div>
+      <label class="toggle"><input type="checkbox" id="n-move" checked onchange="saveNotifSettings()"><span class="slider"></span></label>
+    </div>
+    <div class="notif-row">
+      <div class="notif-label">
+        😱 Fear & Greed Extrême
+        <small>Index < 20 (peur extrême) ou > 80 (avidité extrême)</small>
+      </div>
+      <label class="toggle"><input type="checkbox" id="n-fg" checked onchange="saveNotifSettings()"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <!-- Fear & Greed FULL -->
+  <div class="panel">
+    <h3>😱 Fear & Greed Index — Crypto Market</h3>
+    <div class="fg-wrap">
+      <div style="text-align:center">
+        <canvas id="fgCanvas" width="200" height="110"></canvas>
+        <div id="fgVal" style="margin-top:-20px">
+          <div id="fgNum" style="font-size:2.2rem;font-weight:900">--</div>
+          <div id="fgTxt" style="font-size:.8rem;color:#8892a4">Chargement...</div>
+        </div>
+      </div>
+      <div class="fg-info">
+        <p id="fgDesc">Chargement de l'index Fear & Greed...</p>
+        <div class="fg-bar"><div class="fg-bar-fill" id="fgBarFill" style="width:0%"></div></div>
+        <div class="rr-label"><span>Peur Extrême 😱</span><span>Avidité Extrême 🤑</span></div>
+        <div class="fg-hist" id="fgHist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log des alertes -->
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3>📋 Historique des alertes</h3>
+      <button class="btn" style="padding:6px 12px;font-size:.75rem" onclick="clearLog()">🗑️ Effacer</button>
+    </div>
+    <div class="notif-log" id="notif-log">
+      <div style="color:#8892a4;text-align:center;padding:20px">Aucune alerte pour l'instant. Les alertes apparaîtront ici.</div>
+    </div>
+  </div>
+  <div class="warn">⚠️ Les notifications nécessitent l'autorisation du navigateur. Sur iOS 16.4+, l'app doit être installée en PWA depuis Safari.</div>
 </div>
+
+<!-- CALCULATEUR DE POSITION -->
+<div class="page" id="p-c">
+  <div class="panel">
+    <h3>🎯 Calculateur de Position & Risk Management</h3>
+    <p style="color:#8892a4;font-size:.82rem;margin-bottom:16px">Calcule automatiquement la taille de position optimale selon ton capital et ton risque.</p>
+
+    <!-- Boutons auto-remplissage depuis les données live -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:.75rem;color:#8892a4;margin-bottom:6px;text-transform:uppercase;font-weight:700">⚡ Remplir depuis signal live</div>
+      <div class="auto-fill-btns" id="autofill-btns">
+        <span style="color:#8892a4;font-size:.8rem">Chargement des données...</span>
+      </div>
+    </div>
+
+    <div class="calc-grid">
+      <!-- INPUTS -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="calc-input">
+          <label>💰 Capital total ( $ )</label>
+          <input type="number" id="c-capital" value="1000" min="1" oninput="calcPosition()">
+        </div>
+        <div class="calc-input">
+          <label>⚠️ Risque par trade (%)</label>
+          <input type="number" id="c-risk" value="2" min="0.1" max="100" step="0.1" oninput="calcPosition()">
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button onclick="setRisk(1)" style="padding:3px 10px;border-radius:6px;border:1px solid #2a3a5c;background:#0a0e1a;color:#aaa;cursor:pointer;font-size:.75rem">1%</button>
+            <button onclick="setRisk(2)" style="padding:3px 10px;border-radius:6px;border:1px solid #00aaff;background:#00aaff22;color:#00aaff;cursor:pointer;font-size:.75rem">2%</button>
+            <button onclick="setRisk(3)" style="padding:3px 10px;border-radius:6px;border:1px solid #2a3a5c;background:#0a0e1a;color:#aaa;cursor:pointer;font-size:.75rem">3%</button>
+            <button onclick="setRisk(5)" style="padding:3px 10px;border-radius:6px;border:1px solid #ff3366;background:#ff336622;color:#ff3366;cursor:pointer;font-size:.75rem">5%</button>
+          </div>
+        </div>
+        <div class="calc-input">
+          <label>📍 Prix d'entrée ( $ )</label>
+          <input type="number" id="c-entry" value="" placeholder="Ex: 45000" oninput="calcPosition()">
+        </div>
+        <div class="calc-input">
+          <label>🛑 Stop Loss ( $ )</label>
+          <input type="number" id="c-sl" value="" placeholder="Ex: 43000" oninput="calcPosition()">
+        </div>
+        <div class="calc-input">
+          <label>🎯 Take Profit ( $ )</label>
+          <input type="number" id="c-tp" value="" placeholder="Ex: 50000" oninput="calcPosition()">
+        </div>
+        <div class="calc-input">
+          <label>⚡ Levier (x)</label>
+          <input type="number" id="c-lev" value="1" min="1" max="100" oninput="calcPosition()">
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button onclick="setLev(1)" style="padding:3px 10px;border-radius:6px;border:1px solid #00aaff;background:#00aaff22;color:#00aaff;cursor:pointer;font-size:.75rem">1x</button>
+            <button onclick="setLev(2)" style="padding:3px 10px;border-radius:6px;border:1px solid #2a3a5c;background:#0a0e1a;color:#aaa;cursor:pointer;font-size:.75rem">2x</button>
+            <button onclick="setLev(5)" style="padding:3px 10px;border-radius:6px;border:1px solid #2a3a5c;background:#0a0e1a;color:#aaa;cursor:pointer;font-size:.75rem">5x</button>
+            <button onclick="setLev(10)" style="padding:3px 10px;border-radius:6px;border:1px solid #ff3366;background:#ff336622;color:#ff3366;cursor:pointer;font-size:.75rem">10x</button>
+          </div>
+        </div>
+        <div class="calc-input">
+          <label>📊 Direction</label>
+          <select id="c-dir" onchange="calcPosition()">
+            <option value="long">🟢 LONG</option>
+            <option value="short">🔴 SHORT</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- RÉSULTATS -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="calc-result">
+          <h4>📐 Taille de Position</h4>
+          <div class="res-row"><span class="rl">Capital à risquer</span><span class="rv" id="r-risk-amt" style="color:#ff3366">--</span></div>
+          <div class="res-row"><span class="rl">Distance SL</span><span class="rv" id="r-sl-dist">--</span></div>
+          <div class="res-row"><span class="rl">Taille position (sans levier)</span><span class="rv" id="r-pos-size">--</span></div>
+          <div class="res-row total"><span class="rl">🎯 Position avec levier</span><span class="rv" id="r-pos-lev">--</span></div>
+          <div class="res-row"><span class="rl">Nb unités à acheter</span><span class="rv" id="r-units">--</span></div>
+          <div class="res-row"><span class="rl">Marge requise</span><span class="rv" id="r-margin">--</span></div>
+        </div>
+
+        <div class="calc-result">
+          <h4>💹 Profit & Perte</h4>
+          <div class="res-row"><span class="rl">✅ Gain si TP atteint</span><span class="rv pos" id="r-gain">--</span></div>
+          <div class="res-row loss"><span class="rl">❌ Perte si SL touché</span><span class="rv" id="r-loss">--</span></div>
+          <div class="res-row"><span class="rl">📊 Ratio Risk/Reward</span><span class="rv" id="r-rr" style="color:#ffd700">--</span></div>
+          <div class="res-row"><span class="rl">% gain sur capital</span><span class="rv pos" id="r-gain-pct">--</span></div>
+          <div class="res-row"><span class="rl">% perte sur capital</span><span class="rv neg" id="r-loss-pct">--</span></div>
+          <!-- Barre RR visuelle -->
+          <div class="rr-bar"><div class="rr-loss" id="rr-bar-loss" style="width:50%"></div><div class="rr-gain" id="rr-bar-gain" style="width:50%"></div></div>
+          <div class="rr-label"><span id="rr-l-loss">Risque</span><span id="rr-l-gain">Gain</span></div>
+        </div>
+
+        <div class="calc-result">
+          <h4>🧮 Trailing Stop</h4>
+          <div class="res-row"><span class="rl">Trail 1x ATR</span><span class="rv" id="r-trail1">--</span></div>
+          <div class="res-row"><span class="rl">Trail 1.5x ATR</span><span class="rv" id="r-trail15">--</span></div>
+          <div class="res-row"><span class="rl">Trail 2x ATR</span><span class="rv" id="r-trail2">--</span></div>
+          <div class="res-row"><span class="rl">Breakeven (couvrir frais)</span><span class="rv" id="r-be">--</span></div>
+        </div>
+
+        <div class="calc-result" id="r-advice-box">
+          <h4>💡 Conseil Risk Management</h4>
+          <p id="r-advice" style="font-size:.85rem;color:#aaa;line-height:1.6">Remplis les champs pour obtenir une analyse.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="warn">⚠️ Outil éducatif uniquement. Le levier amplifie les gains ET les pertes. Ne risquez jamais plus que vous ne pouvez vous permettre de perdre.</div>
+</div>
+
+</div><!-- .main -->
 
 <div class="toast" id="toast">✅ OK</div>
 
@@ -191,23 +439,31 @@ const COINS={
   jlp:{id:'jupiter-perpetuals-liquidity-provider-token',name:'Jupiter LP',sym:'JLP/USD',ic:'i4',ch:'J'}
 };
 let DATA={},charts={},bigC=null,currentBig='wbtc';
+let fgData=null;
+let notifLog=JSON.parse(localStorage.getItem('notifLog')||'[]');
+let notifSettings=JSON.parse(localStorage.getItem('notifSettings')||'{"signal":true,"rsi":true,"move":true,"fg":true}');
+let lastAlerts={};
 
+// =========== UTILS ===========
 function setStatus(s,t){const d=document.getElementById('dot'),x=document.getElementById('stat');d.className='dot '+(s==='ok'?'ok':s==='err'?'err':'');x.textContent=t}
-function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2500)}
+function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',3000)}
 function tab(e,id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  e.currentTarget.classList.add('active');
+  if(e.currentTarget)e.currentTarget.classList.add('active');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('p-'+id).classList.add('active');
   if(id==='b')drawBig();
+  if(id==='t')renderFG();
+  if(id==='c')buildAutoFill();
 }
 function fmt(v){if(v==null||isNaN(v))return '--';return '$'+v.toLocaleString(undefined,{maximumFractionDigits:v<1?6:v<10?4:2})}
+function fmtN(v,d=2){if(v==null||isNaN(v))return '--';return v.toFixed(d)}
 function updTime(){document.getElementById('time').textContent=new Date().toLocaleTimeString('fr-FR')}
 
-// === INDICATORS ===
+// =========== INDICATORS ===========
 function rsi(p,n=14){if(p.length<n+1)return 50;let g=0,l=0;for(let i=p.length-n;i<p.length;i++){const d=p[i]-p[i-1];if(d>0)g+=d;else l-=d}if(l===0)return 100;const rs=(g/n)/(l/n);return 100-100/(1+rs)}
-function ema(p,n){if(!p.length)return 0;const k=2/(n+1);let e=p[0];for(let i=1;i<p.length;i++)e=p[i]*k+e*(1-k);return e}
-function vola(p){if(p.length<2)return 0;const r=[];for(let i=1;i<p.length;i++)r.push((p[i]-p[i-1])/p[i-1]);const m=r.reduce((a,b)=>a+b,0)/r.length;return Math.sqrt(r.reduce((a,b)=>a+(b-m)**2,0)/r.length)*100}
+function ema(p,n){if(!p||!p.length)return 0;const k=2/(n+1);let e=p[0];for(let i=1;i<p.length;i++)e=p[i]*k+e*(1-k);return e}
+function vola(p){if(!p||p.length<2)return 0;const r=[];for(let i=1;i<p.length;i++)r.push((p[i]-p[i-1])/p[i-1]);const m=r.reduce((a,b)=>a+b,0)/r.length;return Math.sqrt(r.reduce((a,b)=>a+(b-m)**2,0)/r.length)*100}
 
 function analyze(prices,ch24){
   const c=prices[prices.length-1];
@@ -229,7 +485,7 @@ function analyze(prices,ch24){
   const atr=v*c/100;
   const tp=sc>=0?c+atr*2.5:c-atr*2.5;
   const sl=sc>=0?c-atr*1.2:c+atr*1.2;
-  return{rsi:r,e20,e50,v,h,l,pos,sc,trend,c,tp,sl,sigs:{h1:sig(.7),h2:sig(.9),h3:sig(1),h4:sig(1.1)}};
+  return{rsi:r,e20,e50,v,h,l,pos,sc,trend,c,tp,sl,atr,sigs:{h1:sig(.7),h2:sig(.9),h3:sig(1),h4:sig(1.1)}};
 }
 
 function chips(a){
@@ -246,7 +502,7 @@ function chips(a){
   return r;
 }
 
-// === API ===
+// =========== API ===========
 async function fetchAll(){
   setStatus('','CHARGEMENT...');
   try{
@@ -278,6 +534,8 @@ async function fetchAll(){
     setStatus('ok','LIVE');
     toast('✅ Données live chargées');
     loadNews();
+    fetchFearGreed();
+    checkAlerts();
   }catch(e){
     console.error(e);
     setStatus('err','ERREUR');
@@ -331,10 +589,9 @@ function render(){
     <div class="sc"><div class="ic">📈</div><div class="v neu">${sent}%</div><div class="l">Sentiment Bull</div></div>
     <div class="sc"><div class="ic">📊</div><div class="v" style="color:#00aaff">${rsiAvg}</div><div class="l">RSI Moyen</div></div>`;
 
-  // Analyse table
   const tb=document.getElementById('atbl');
   tb.innerHTML='<tr><th>Crypto</th><th>Prix Live</th><th>24h</th><th>RSI</th><th>Tendance</th><th>Action</th></tr>';
-  Object.keys(COINS).forEach(k=>{const d=DATA[k];if(!d)return;const a=d.analysis;const tt=a.trend==='bull'?'Haussière':a.trend==='bear'?'Baissière':'Neutre';const tc=a.trend==='bull'?'pos':a.trend==='bear'?'neg':'neu';const r=a.sc>15?'LONG':a.sc<-15?'SHORT':'ATTENDRE';tb.innerHTML+=`<tr><td><strong>${COINS[k].name}</strong></td><td>${fmt(d.price)}</td><td class="${d.ch24>=0?'pos':'neg'}">${d.ch24>=0?'+':''}${d.ch24.toFixed(2)}%</td><td>${a.rsi.toFixed(1)}</td><td class="${tc}">${tt}</td><td class="${tc}"><strong>${r}</strong></td></tr>`});
+  Object.keys(COINS).forEach(k=>{const d=DATA[k];if(!d)return;const a=d.analysis;const tt=a.trend==='bull'?'Haussière':a.trend==='bear'?'Baissière':'Neutre';const tc=a.trend==='bull'?'pos':a.trend==='bear'?'neg':'neu';const rv=a.sc>15?'LONG':a.sc<-15?'SHORT':'ATTENDRE';tb.innerHTML+=`<tr><td><strong>${COINS[k].name}</strong></td><td>${fmt(d.price)}</td><td class="${d.ch24>=0?'pos':'neg'}">${d.ch24>=0?'+':''}${d.ch24.toFixed(2)}%</td><td>${a.rsi.toFixed(1)}</td><td class="${tc}">${tt}</td><td class="${tc}"><strong>${rv}</strong></td></tr>`});
 }
 
 function loadNews(){
@@ -348,7 +605,7 @@ function loadNews(){
   items.push(
     {src:'CoinDesk',tm:'Live',title:'📰 Actualités crypto en temps réel',desc:'Source majeure d\'actualités crypto. Bitcoin, Ethereum, Solana, DeFi, NFT.',link:'https://www.coindesk.com'},
     {src:'CoinTelegraph',tm:'Live',title:'📰 News, analyses & prédictions',desc:'Articles approfondis sur Bitcoin, Solana, Ethereum et le marché crypto.',link:'https://cointelegraph.com'},
-    {src:'X / Twitter',tm:'Live',title:'🐦 Tweets crypto en direct',desc:'Suivre les traders, analystes et whales sur X. Recherche : crypto, BTC, SOL, ETH.',link:'https://x.com/search?q=%24BTC%20OR%20%24SOL%20OR%20%24ETH&src=typed_query&f=live'},
+    {src:'X / Twitter',tm:'Live',title:'🐦 Tweets crypto en direct',desc:'Suivre les traders, analystes et whales sur X.',link:'https://x.com/search?q=%24BTC%20OR%20%24SOL%20OR%20%24ETH&src=typed_query&f=live'},
     {src:'Whale Alert',tm:'Live',title:'🐋 Mouvements whale temps réel',desc:'Surveillance des grosses transactions on-chain BTC, ETH, SOL.',link:'https://x.com/whale_alert'},
     {src:'TradingView',tm:'Live',title:'📊 Graphiques avancés & idées',desc:'Analyses techniques des traders, indicateurs avancés sur tous les actifs.',link:'https://www.tradingview.com/markets/cryptocurrencies/'},
     {src:'Jupiter Exchange',tm:'Live',title:'🪐 JLP Token - Stats officielles',desc:'Page officielle JLP : APY, composition, stats de la pool de liquidité.',link:'https://jup.ag/perps-earn'}
@@ -379,69 +636,4 @@ function drawBig(){
     <div class="stat"><div class="l">🎯 TP</div><div class="v pos">${fmt(a.tp)}</div></div>
     <div class="stat"><div class="l">🛑 SL</div><div class="v neg">${fmt(a.sl)}</div></div>
     <div class="stat"><div class="l">Volume 24h</div><div class="v">$${(d.vol/1e6).toFixed(1)}M</div></div>`;
-  let s='';
-  if(a.sc>30)s=`<strong style="color:#00ff88">LONG FORT</strong> — Momentum haussier puissant. Entrée au prix actuel ou pullback vers ${fmt(a.e20)}.`;
-  else if(a.sc>15)s=`<strong style="color:#00ff88">LONG MODÉRÉ</strong> — Tendance haussière. Attendre retracement pour meilleur R/R.`;
-  else if(a.sc<-30)s=`<strong style="color:#ff3366">SHORT FORT</strong> — Forte pression vendeuse. Position short justifiée.`;
-  else if(a.sc<-15)s=`<strong style="color:#ff3366">SHORT MODÉRÉ</strong> — Tendance baissière. Vendre les rebonds.`;
-  else s=`<strong style="color:#ffd700">ATTENDRE</strong> — Marché indécis. Attendre cassure de ${fmt(a.h)} (haussier) ou ${fmt(a.l)} (baissier).`;
-  document.getElementById('bana').innerHTML=`${s}<br><br><strong>Détails :</strong><br>• RSI ${a.rsi.toFixed(1)} : ${a.rsi>70?'surachat ⚠️':a.rsi<30?'survente 💎':'neutre'}<br>• Prix vs EMA20 (${fmt(a.e20)}) : ${d.price>a.e20?'au-dessus ✅':'en-dessous ❌'}<br>• EMA20 vs EMA50 : ${a.e20>a.e50?'croisement haussier ✅':'croisement baissier ❌'}<br>• Score global : ${a.sc.toFixed(0)}/100`;
-
-  if(bigC)bigC.destroy();
-  const cv=document.getElementById('bigC');
-  const g=cv.getContext('2d').createLinearGradient(0,0,0,340);g.addColorStop(0,col+'66');g.addColorStop(1,col+'00');
-  bigC=new Chart(cv,{type:'line',data:{labels:d.labels,datasets:[{label:c.name,data:d.prices,borderColor:col,backgroundColor:g,borderWidth:2.5,fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.y)}}},scales:{x:{ticks:{color:'#8892a4',maxTicksLimit:10},grid:{color:'#2a3a5c33'}},y:{ticks:{color:'#8892a4',callback:v=>fmt(v)},grid:{color:'#2a3a5c33'}}},elements:{point:{radius:0,hoverRadius:6}},interaction:{intersect:false,mode:'index'}}});
-}
-
-// === INIT ===
-updTime();setInterval(updTime,1000);
-fetchAll();
-setInterval(fetchAll,90000);
-</script>
-
-<script>
-// Service Worker PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(() => console.log('✅ PWA active'))
-      .catch(e => console.log('❌ SW erreur', e));
-  });
-}
-
-// Bouton Installer (Android/Desktop)
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  showInstallBtn('📲 Installer l\'app', async () => {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  });
-});
-
-// Instructions iOS
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-if (isIOS && !isStandalone) {
-  setTimeout(() => {
-    showInstallBtn('📲 Installer (iOS)', () => {
-      alert('Pour installer sur iPhone :\n\n1. Touche le bouton Partager ⬆️\n2. Choisis "Sur l\'écran d\'accueil"\n3. Touche "Ajouter"');
-    });
-  }, 2000);
-}
-
-function showInstallBtn(text, onClick) {
-  if (document.getElementById('instBtn')) return;
-  const btn = document.createElement('button');
-  btn.id = 'instBtn';
-  btn.textContent = text;
-  btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#00aaff,#9945ff);color:#fff;border:none;padding:12px 20px;border-radius:30px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,170,255,.5);font-size:.9rem';
-  btn.onclick = () => { btn.remove(); onClick(); };
-  document.body.appendChild(btn);
-}
-</script>
-
-</body>
-</html>
+  let
