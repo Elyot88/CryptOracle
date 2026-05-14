@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>⚡ Crypto Trader Pro - LIVE</title>
-  <!-- PWA -->
+<!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00aaff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -194,14 +194,20 @@ let DATA={},charts={},bigC=null,currentBig='wbtc';
 
 function setStatus(s,t){const d=document.getElementById('dot'),x=document.getElementById('stat');d.className='dot '+(s==='ok'?'ok':s==='err'?'err':'');x.textContent=t}
 function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2500)}
-function tab(e,id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('p-'+id).classList.add('active');if(id==='b')drawBig()}
-function fmt(v){return '$'+v.toLocaleString(undefined,{maximumFractionDigits:v<1?6:v<10?4:2})}
+function tab(e,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  if(id==='b')drawBig();
+}
+function fmt(v){if(v==null||isNaN(v))return '--';return '$'+v.toLocaleString(undefined,{maximumFractionDigits:v<1?6:v<10?4:2})}
 function updTime(){document.getElementById('time').textContent=new Date().toLocaleTimeString('fr-FR')}
 
 // === INDICATORS ===
 function rsi(p,n=14){if(p.length<n+1)return 50;let g=0,l=0;for(let i=p.length-n;i<p.length;i++){const d=p[i]-p[i-1];if(d>0)g+=d;else l-=d}if(l===0)return 100;const rs=(g/n)/(l/n);return 100-100/(1+rs)}
-function ema(p,n){const k=2/(n+1);let e=p[0];for(let i=1;i<p.length;i++)e=p[i]*k+e*(1-k);return e}
-function vola(p){const r=[];for(let i=1;i<p.length;i++)r.push((p[i]-p[i-1])/p[i-1]);const m=r.reduce((a,b)=>a+b,0)/r.length;return Math.sqrt(r.reduce((a,b)=>a+(b-m)**2,0)/r.length)*100}
+function ema(p,n){if(!p.length)return 0;const k=2/(n+1);let e=p[0];for(let i=1;i<p.length;i++)e=p[i]*k+e*(1-k);return e}
+function vola(p){if(p.length<2)return 0;const r=[];for(let i=1;i<p.length;i++)r.push((p[i]-p[i-1])/p[i-1]);const m=r.reduce((a,b)=>a+b,0)/r.length;return Math.sqrt(r.reduce((a,b)=>a+(b-m)**2,0)/r.length)*100}
 
 function analyze(prices,ch24){
   const c=prices[prices.length-1];
@@ -210,7 +216,7 @@ function analyze(prices,ch24){
   const e50=ema(prices.slice(-50),Math.min(50,prices.length));
   const v=vola(prices);
   const h=Math.max(...prices),l=Math.min(...prices);
-  const pos=((c-l)/(h-l))*100;
+  const pos=h===l?50:((c-l)/(h-l))*100;
   let sc=0;
   if(r>70)sc-=20;else if(r>55)sc+=15;else if(r<30)sc+=20;else if(r<45)sc-=15;
   if(c>e20)sc+=15;else sc-=15;
@@ -248,7 +254,7 @@ async function fetchAll(){
     const pr=await fetch(`${API}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`);
     if(!pr.ok)throw new Error('Prix API '+pr.status);
     const prices=await pr.json();
-    
+
     for(const k of Object.keys(COINS)){
       const id=COINS[k].id;
       const pi=prices[id];
@@ -258,15 +264,16 @@ async function fetchAll(){
         if(!cr.ok)throw new Error('Chart '+cr.status);
         const cd=await cr.json();
         const pts=cd.prices||[];
+        if(pts.length<2)throw new Error('Pas assez de données');
         const vals=pts.map(p=>p[1]);
         const labs=pts.map(p=>{const d=new Date(p[0]);return d.getDate()+'/'+(d.getMonth()+1)+' '+d.getHours()+'h'});
         DATA[k]={price:pi.usd,ch24:pi.usd_24h_change||0,vol:pi.usd_24h_vol||0,prices:vals,labels:labs,analysis:analyze(vals,pi.usd_24h_change||0)};
         await new Promise(r=>setTimeout(r,400));
-      }catch(e){console.error(k,e)}
+      }catch(e){console.error(k,e.message)}
     }
-    
+
     if(Object.keys(DATA).length===0)throw new Error('Aucune donnée récupérée');
-    
+
     render();
     setStatus('ok','LIVE');
     toast('✅ Données live chargées');
@@ -284,17 +291,17 @@ function render(){
   const cards=document.getElementById('cards');
   cards.innerHTML='<div class="grid" id="gi"></div>';
   const gi=document.getElementById('gi');
-  
+
   Object.keys(COINS).forEach(k=>{
     const d=DATA[k];if(!d)return;
     const c=COINS[k],a=d.analysis;
-    if(a.trend==='bull')bull++;if(a.trend==='bear')bear++;
+    if(a.trend==='bull')bull++;
+    if(a.trend==='bear')bear++;
     rsiSum+=a.rsi;n++;
-    const col=a.trend==='bull'?'#00ff88':a.trend==='bear'?'#ff3366':'#ffd700';
     const up=d.ch24>=0;
     let chh='';chips(a).forEach(x=>chh+=`<div class="chip ${x.c}">${x.t}</div>`);
     let sg='';['h1','h2','h3','h4'].forEach((t,i)=>{const s=a.sigs[t];const cl=s.t==='LONG'?'long':s.t==='SHORT'?'short':'neut';sg+=`<div class="sb ${cl}"><div class="tf">${i+1}h</div><div class="lb">${s.t}</div><div class="cf">${s.c}%</div></div>`});
-    
+
     gi.innerHTML+=`<div class="card ${a.trend==='neu'?'neu':a.trend}">
       <div class="ch"><div class="coin"><div class="ico ${c.ic}">${c.ch}</div><div><h3>${c.name}</h3><div class="sym">${c.sym}</div></div></div><div class="pr"><div class="p">${fmt(d.price)}</div><div class="bdg ${up?'u':'d'}">${up?'▲':'▼'} ${up?'+':''}${d.ch24.toFixed(2)}%</div></div></div>
       <div style="padding:4px 18px;font-size:.7rem;color:#8892a4;display:flex;justify-content:space-between"><span>📊 72h Live</span><span>Vol: $${(d.vol/1e6).toFixed(1)}M</span></div>
@@ -304,7 +311,7 @@ function render(){
       <div class="sigs"><div class="st">⚡ SIGNAUX LIVE</div><div class="sg">${sg}</div></div>
     </div>`;
   });
-  
+
   setTimeout(()=>{
     Object.keys(COINS).forEach(k=>{
       const d=DATA[k];if(!d)return;
@@ -315,14 +322,15 @@ function render(){
       charts[k]=new Chart(cv,{type:'line',data:{labels:d.labels,datasets:[{data:d.prices,borderColor:col,backgroundColor:g,borderWidth:2,fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.y)}}},scales:{x:{ticks:{color:'#8892a4',font:{size:9},maxTicksLimit:6},grid:{display:false}},y:{ticks:{color:'#8892a4',font:{size:9},callback:v=>fmt(v)},grid:{color:'#2a3a5c33'}}},elements:{point:{radius:0,hoverRadius:5}},interaction:{intersect:false,mode:'index'}}});
     });
   },50);
-  
-  const sent=Math.round((bull/((bull+bear)||1))*100);
+
+  const sent=(bull+bear)>0?Math.round((bull/(bull+bear))*100):50;
+  const rsiAvg=n>0?(rsiSum/n).toFixed(0):'--';
   document.getElementById('sum').innerHTML=`
     <div class="sc"><div class="ic">🟢</div><div class="v pos">${bull}</div><div class="l">Signaux LONG</div></div>
     <div class="sc"><div class="ic">🔴</div><div class="v neg">${bear}</div><div class="l">Signaux SHORT</div></div>
     <div class="sc"><div class="ic">📈</div><div class="v neu">${sent}%</div><div class="l">Sentiment Bull</div></div>
-    <div class="sc"><div class="ic">📊</div><div class="v" style="color:#00aaff">${(rsiSum/n).toFixed(0)}</div><div class="l">RSI Moyen</div></div>`;
-  
+    <div class="sc"><div class="ic">📊</div><div class="v" style="color:#00aaff">${rsiAvg}</div><div class="l">RSI Moyen</div></div>`;
+
   // Analyse table
   const tb=document.getElementById('atbl');
   tb.innerHTML='<tr><th>Crypto</th><th>Prix Live</th><th>24h</th><th>RSI</th><th>Tendance</th><th>Action</th></tr>';
@@ -349,7 +357,13 @@ function loadNews(){
   items.forEach(n=>nl.innerHTML+=`<a class="news" href="${n.link}" target="_blank" rel="noopener"><div class="nmeta"><span class="nsrc">${n.src}</span><span class="ntm">${n.tm}</span></div><h4>${n.title}</h4><p>${n.desc}</p></a>`);
 }
 
-function bigSel(e,k){document.querySelectorAll('.csb').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');currentBig=k;drawBig()}
+function bigSel(e,k){
+  document.querySelectorAll('.csb').forEach(b=>b.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  currentBig=k;
+  drawBig();
+}
+
 function drawBig(){
   const d=DATA[currentBig];if(!d){document.getElementById('btitle').textContent='⏳ Pas de données';return}
   const c=COINS[currentBig],a=d.analysis;
@@ -372,7 +386,7 @@ function drawBig(){
   else if(a.sc<-15)s=`<strong style="color:#ff3366">SHORT MODÉRÉ</strong> — Tendance baissière. Vendre les rebonds.`;
   else s=`<strong style="color:#ffd700">ATTENDRE</strong> — Marché indécis. Attendre cassure de ${fmt(a.h)} (haussier) ou ${fmt(a.l)} (baissier).`;
   document.getElementById('bana').innerHTML=`${s}<br><br><strong>Détails :</strong><br>• RSI ${a.rsi.toFixed(1)} : ${a.rsi>70?'surachat ⚠️':a.rsi<30?'survente 💎':'neutre'}<br>• Prix vs EMA20 (${fmt(a.e20)}) : ${d.price>a.e20?'au-dessus ✅':'en-dessous ❌'}<br>• EMA20 vs EMA50 : ${a.e20>a.e50?'croisement haussier ✅':'croisement baissier ❌'}<br>• Score global : ${a.sc.toFixed(0)}/100`;
-  
+
   if(bigC)bigC.destroy();
   const cv=document.getElementById('bigC');
   const g=cv.getContext('2d').createLinearGradient(0,0,0,340);g.addColorStop(0,col+'66');g.addColorStop(1,col+'00');
@@ -382,33 +396,51 @@ function drawBig(){
 // === INIT ===
 updTime();setInterval(updTime,1000);
 fetchAll();
-setInterval(fetchAll,90000); // refresh toutes les 90s pour éviter rate limit
+setInterval(fetchAll,90000);
 </script>
-  <script>
+
+<script>
+// Service Worker PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(r => console.log('✅ PWA active'))
+      .then(() => console.log('✅ PWA active'))
       .catch(e => console.log('❌ SW erreur', e));
   });
 }
 
-// Bouton "Installer l'app"
+// Bouton Installer (Android/Desktop)
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  const btn = document.createElement('button');
-  btn.textContent = '📲 Installer l\'app';
-  btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#00aaff,#9945ff);color:#fff;border:none;padding:12px 20px;border-radius:30px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,170,255,.5);font-size:.9rem';
-  btn.onclick = async () => {
-    btn.remove();
+  showInstallBtn('📲 Installer l\'app', async () => {
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     deferredPrompt = null;
-  };
-  document.body.appendChild(btn);
+  });
 });
+
+// Instructions iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+if (isIOS && !isStandalone) {
+  setTimeout(() => {
+    showInstallBtn('📲 Installer (iOS)', () => {
+      alert('Pour installer sur iPhone :\n\n1. Touche le bouton Partager ⬆️\n2. Choisis "Sur l\'écran d\'accueil"\n3. Touche "Ajouter"');
+    });
+  }, 2000);
+}
+
+function showInstallBtn(text, onClick) {
+  if (document.getElementById('instBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'instBtn';
+  btn.textContent = text;
+  btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#00aaff,#9945ff);color:#fff;border:none;padding:12px 20px;border-radius:30px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,170,255,.5);font-size:.9rem';
+  btn.onclick = () => { btn.remove(); onClick(); };
+  document.body.appendChild(btn);
+}
 </script>
 
 </body>
